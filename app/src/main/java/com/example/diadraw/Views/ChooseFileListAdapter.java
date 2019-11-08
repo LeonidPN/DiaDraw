@@ -3,6 +3,7 @@ package com.example.diadraw.Views;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +12,7 @@ import com.example.diadraw.Models.WorkModels.FileModel;
 import com.example.diadraw.Presenters.ChooseFileListPresenter;
 import com.example.diadraw.R;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class ChooseFileListAdapter extends RecyclerView.Adapter<ChooseFileListAdapter.ChooseFileListViewHolder> {
@@ -43,7 +45,14 @@ public class ChooseFileListAdapter extends RecyclerView.Adapter<ChooseFileListAd
         final FileModel file = filesList.get(position);
         final ChooseFileListPresenter presenter = new ChooseFileListPresenter(holder, position);
         ((TextView) holder.view.findViewById(R.id.textViewFileName)).setText(file.getName());
-        ((TextView) holder.view.findViewById(R.id.textViewDate)).setText(file.getDate().toString());
+        SimpleDateFormat formatForDateNow = new SimpleDateFormat("E yyyy.MM.dd hh:mm:ss");
+        ((TextView) holder.view.findViewById(R.id.textViewDate)).setText(formatForDateNow.format(file.getDate()));
+        ((ImageButton) holder.view.findViewById(R.id.imageButtonMenu)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.showPopupMenu(v);
+            }
+        });
     }
 
     @Override
