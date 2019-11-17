@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -60,12 +61,29 @@ public class FileService {
         fos.close();
     }
 
-    public void deleteFile(Context context, String fileName){
-
+    public void deleteFile(Context context, String fileName) {
+        context.deleteFile(fileName + EXTENSION);
     }
 
-    public void renameFile(Context context, String fileNameOld, String fileNameNew){
+    public void renameFile(Context context, String fileNameOld, String fileNameNew) throws IOException {
+        Gson gson = new GsonBuilder().create();
+        Type typeOfFileModel = new TypeToken<FileModel>() {
+        }.getType();
 
+        FileInputStream fin = context.openFileInput(fileNameOld + EXTENSION);
+        byte[] bytes = new byte[fin.available()];
+        fin.read(bytes);
+        String text = new String(bytes);
+        FileModel file = gson.fromJson(text, typeOfFileModel);
+        fin.close();
+
+        context.deleteFile(fileNameOld + EXTENSION);
+        file.setName(fileNameNew);
+
+        FileOutputStream fos = context.openFileOutput(fileNameNew + EXTENSION, Context.MODE_PRIVATE);
+        text = gson.toJson(file, typeOfFileModel);
+        fos.write(text.getBytes());
+        fos.close();
     }
 
 }

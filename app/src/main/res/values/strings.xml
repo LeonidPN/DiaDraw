@@ -6,4 +6,6 @@
     <string name="enter_file_name">Введите название файла:</string>
     <string name="cancel">Отмена</string>
     <string name="create">Создать</string>
+    <string name="file_rename">Переименование файла</string>
+    <string name="change">Изменить</string>
 </resources>

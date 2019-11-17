@@ -44,6 +44,12 @@ public class ChooseFileListAdapter extends RecyclerView.Adapter<ChooseFileListAd
     public void onBindViewHolder(ChooseFileListViewHolder holder, int position) {
         final FileModel file = filesList.get(position);
         final ChooseFileListPresenter presenter = new ChooseFileListPresenter(holder, position);
+        holder.view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.openFile();
+            }
+        });
         ((TextView) holder.view.findViewById(R.id.textViewFileName)).setText(file.getName());
         SimpleDateFormat formatForDateNow = new SimpleDateFormat("E yyyy.MM.dd hh:mm:ss");
         ((TextView) holder.view.findViewById(R.id.textViewDate)).setText(formatForDateNow.format(file.getDate()));

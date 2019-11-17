@@ -3,6 +3,7 @@ package com.example.diadraw.Presenters;
 import android.app.Dialog;
 import android.content.Context;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,22 +16,63 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainPresenter {
+public class ChooseFilePresenter {
+
+    private static ChooseFilePresenter presenter;
+
+    public static ChooseFilePresenter getPresenter(Context context) {
+        if (presenter == null) {
+            presenter = new ChooseFilePresenter(context);
+        }
+        return presenter;
+    }
+
+    private ChooseFilePresenter(Context context) {
+        this.context = context;
+    }
+
+    private RecyclerView recyclerView;
+    private ImageButton imageButton;
+    private Dialog dialog;
+
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
+    }
+
+    public void setRecyclerView(RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
+    }
+
+    public ImageButton getImageButton() {
+        return imageButton;
+    }
+
+    public void setImageButton(ImageButton imageButton) {
+        this.imageButton = imageButton;
+    }
+
+    public Dialog getDialog() {
+        return dialog;
+    }
+
+    public void setDialog(Dialog dialog) {
+        this.dialog = dialog;
+    }
 
     private FileService fileService = new FileService();
     private Context context;
 
-    private List<FileModel> list = new ArrayList<>();
-
-    public MainPresenter(Context context){
-        this.context=context;
+    public Context getContext() {
+        return context;
     }
+
+    private List<FileModel> list = new ArrayList<>();
 
     public List<FileModel> getFileList() {
         return getFiles();
     }
 
-    public void createFile(Dialog dialog) {
+    public void createFile() {
         String fileName = ((EditText) dialog.findViewById(R.id.editTextFileName)).getText().toString();
         ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
         try {
@@ -41,15 +83,15 @@ public class MainPresenter {
         dialog.dismiss();
     }
 
-    public void updateRecyclerView(RecyclerView recyclerView) {
+    public void updateRecyclerView() {
         recyclerView.setAdapter(new ChooseFileListAdapter(getFiles()));
     }
 
-    public void showDialog(Dialog dialog) {
+    public void showDialog() {
         dialog.show();
     }
 
-    public void cancel(Dialog dialog) {
+    public void cancel() {
         ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
         dialog.dismiss();
     }
