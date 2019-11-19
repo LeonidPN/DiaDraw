@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/color_background_primary"
     tools:context=".Views.MainActivity">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -21,5 +22,58 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:maxImageSize="20dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButtonFigures"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="50dp"
+        android:clickable="true"
+        android:scaleType="center"
+        android:src="@drawable/button_figures"
+        app:backgroundTint="@color/color_primary"
+        app:fabSize="mini"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:maxImageSize="20dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButtonSave"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="95dp"
+        android:clickable="true"
+        android:scaleType="center"
+        android:src="@drawable/button_save"
+        app:backgroundTint="@color/color_primary"
+        app:fabSize="mini"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:maxImageSize="20dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButtonHome"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:clickable="true"
+        android:scaleType="center"
+        android:src="@drawable/button_home"
+        app:backgroundTint="@color/color_primary"
+        app:fabSize="mini"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:maxImageSize="20dp" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="140dp"
+        android:layout_height="524dp"
+        android:background="@color/color_accent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/floatingActionButtonMenu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
