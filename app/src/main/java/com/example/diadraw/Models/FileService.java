@@ -50,6 +50,21 @@ public class FileService {
         return list;
     }
 
+    public FileModel getFile(Context context, String fileName) throws IOException {
+        Gson gson = new GsonBuilder().create();
+        Type typeOfFileModel = new TypeToken<FileModel>() {
+        }.getType();
+
+        FileInputStream fin = context.openFileInput(fileName + EXTENSION);
+        byte[] bytes = new byte[fin.available()];
+        fin.read(bytes);
+        String text = new String(bytes);
+        FileModel file = gson.fromJson(text, typeOfFileModel);
+        fin.close();
+
+        return file;
+    }
+
     public void createFile(Context context, String fileName) throws IOException {
         FileOutputStream fos = context.openFileOutput(fileName + EXTENSION, Context.MODE_PRIVATE);
         Gson gson = new GsonBuilder().create();
@@ -82,6 +97,26 @@ public class FileService {
 
         FileOutputStream fos = context.openFileOutput(fileNameNew + EXTENSION, Context.MODE_PRIVATE);
         text = gson.toJson(file, typeOfFileModel);
+        fos.write(text.getBytes());
+        fos.close();
+    }
+
+    public void changeFile(Context context, FileModel model) throws IOException {
+        Gson gson = new GsonBuilder().create();
+        Type typeOfFileModel = new TypeToken<FileModel>() {
+        }.getType();
+
+        FileInputStream fin = context.openFileInput(model.getName() + EXTENSION);
+        byte[] bytes = new byte[fin.available()];
+        fin.read(bytes);
+        String text = new String(bytes);
+        FileModel file = gson.fromJson(text, typeOfFileModel);
+        fin.close();
+
+        context.deleteFile(model.getName() + EXTENSION);
+
+        FileOutputStream fos = context.openFileOutput(model.getName() + EXTENSION, Context.MODE_PRIVATE);
+        text = gson.toJson(model, typeOfFileModel);
         fos.write(text.getBytes());
         fos.close();
     }
