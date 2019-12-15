@@ -82,5 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         presenter.setRootView(findViewById(android.R.id.content).getRootView());
         presenter.setRootViewTouchListener();
+
+        presenter.draw();
     }
 }

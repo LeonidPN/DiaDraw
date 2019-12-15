@@ -51,7 +51,7 @@ public class ChooseFileListAdapter extends RecyclerView.Adapter<ChooseFileListAd
             }
         });
         ((TextView) holder.view.findViewById(R.id.textViewFileName)).setText(file.getName());
-        SimpleDateFormat formatForDateNow = new SimpleDateFormat("E yyyy.MM.dd hh:mm:ss");
+        SimpleDateFormat formatForDateNow = new SimpleDateFormat("E yyyy.MM.dd HH:mm:ss");
         ((TextView) holder.view.findViewById(R.id.textViewDate)).setText(formatForDateNow.format(file.getDate()));
         ((ImageButton) holder.view.findViewById(R.id.imageButtonMenu)).setOnClickListener(new View.OnClickListener() {
             @Override

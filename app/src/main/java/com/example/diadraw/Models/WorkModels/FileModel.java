@@ -11,13 +11,16 @@ public class FileModel {
 
     private ArrayList<Figure> figures;
 
+    private ArrayList<Line> lines;
+
     public FileModel() {
     }
 
-    public FileModel(String name, Date date, ArrayList<Figure> figures) {
+    public FileModel(String name, Date date, ArrayList<Figure> figures, ArrayList<Line> lines) {
         this.name = name;
         this.date = date;
-        this.figures=figures;
+        this.figures = figures;
+        this.lines = lines;
     }
 
     public String getName() {
@@ -40,7 +43,7 @@ public class FileModel {
         return figures;
     }
 
-    public void setFigures(ArrayList<Figure> figures) {
-        this.figures = figures;
+    public ArrayList<Line> getLines() {
+        return lines;
     }
 }

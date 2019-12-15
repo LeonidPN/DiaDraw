@@ -4,18 +4,13 @@ import android.content.Context;
 
 import com.example.diadraw.Models.WorkModels.Figure;
 import com.example.diadraw.Models.WorkModels.FileModel;
+import com.example.diadraw.Models.WorkModels.Line;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -68,7 +63,7 @@ public class FileService {
     public void createFile(Context context, String fileName) throws IOException {
         FileOutputStream fos = context.openFileOutput(fileName + EXTENSION, Context.MODE_PRIVATE);
         Gson gson = new GsonBuilder().create();
-        FileModel fileModel = new FileModel(fileName, new Date(), new ArrayList<Figure>());
+        FileModel fileModel = new FileModel(fileName, new Date(), new ArrayList<Figure>(), new ArrayList<Line>());
         Type typeOfFileModel = new TypeToken<FileModel>() {
         }.getType();
         String text = gson.toJson(fileModel, typeOfFileModel);

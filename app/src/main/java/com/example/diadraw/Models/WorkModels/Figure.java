@@ -1,5 +1,7 @@
 package com.example.diadraw.Models.WorkModels;
 
+import java.util.ArrayList;
+
 public class Figure {
 
     private long id;
@@ -11,6 +13,12 @@ public class Figure {
     private float y;
 
     private String text;
+
+    private Figure output;
+
+    private Figure outputLeft;
+
+    private Figure outputRight;
 
     public Figure(long id, String type, float x, float y) {
         this.id = id;
@@ -50,5 +58,29 @@ public class Figure {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public Figure getOutput() {
+        return output;
+    }
+
+    public void setOutput(Figure output) {
+        this.output = output;
+    }
+
+    public Figure getOutputLeft() {
+        return outputLeft;
+    }
+
+    public void setOutputLeft(Figure outputLeft) {
+        this.outputLeft = outputLeft;
+    }
+
+    public Figure getOutputRight() {
+        return outputRight;
+    }
+
+    public void setOutputRight(Figure outputRight) {
+        this.outputRight = outputRight;
     }
 }

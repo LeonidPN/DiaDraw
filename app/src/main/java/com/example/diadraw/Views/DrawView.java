@@ -13,7 +13,6 @@ import android.view.View;
 import com.example.diadraw.Models.WorkModels.Figure;
 import com.example.diadraw.Models.WorkModels.FigureType;
 import com.example.diadraw.Models.WorkModels.Line;
-import com.example.diadraw.Models.WorkModels.Point;
 import com.example.diadraw.R;
 
 import java.util.ArrayList;
@@ -42,6 +41,10 @@ public class DrawView extends View {
 
     private Line selectedLine;
 
+    private float translateX;
+
+    private float translateY;
+
     public DrawView(Context context) {
         super(context);
 
@@ -54,6 +57,9 @@ public class DrawView extends View {
         lines = new ArrayList<>();
 
         addingLine = false;
+
+        translateX = 0;
+        translateY = 0;
 
         fontPaint = new Paint();
         fontPaint.setTextSize(40);
@@ -92,10 +98,19 @@ public class DrawView extends View {
         this.selectedLine = selectedLine;
     }
 
+    public void setTranslateX(float translateX) {
+        this.translateX = translateX;
+    }
+
+    public void setTranslateY(float translateY) {
+        this.translateY = translateY;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.scale(0.5f, 0.5f);
+        canvas.translate(translateX, translateY);
         for (Line line : lines) {
             drawLine(canvas, line);
         }
@@ -349,22 +364,10 @@ public class DrawView extends View {
     }
 
     private void drawLine(Canvas canvas, Line line) {
-        float[] points = new float[line.getPoints().size() * 2];
-        int i = 0;
-        for (Point point : line.getPoints()) {
-            points[i] = point.getX() * 2;
-            i++;
-            points[i] = point.getY() * 2;
-            i++;
+        for (int i = 0; i < line.getPoints().size() - 1; i++) {
+            canvas.drawLine(line.getPoints().get(i).getX() * 2, line.getPoints().get(i).getY() * 2,
+                    line.getPoints().get(i + 1).getX() * 2, line.getPoints().get(i + 1).getY() * 2, borderPaint);
         }
-        canvas.drawVertices(Canvas.VertexMode.TRIANGLES, points.length, points, 0,
-                null, 0, null, 0, null, 0, 0, borderPaint);
-        Path path = new Path();
-        path.moveTo(line.getPoints().get(0).getX(), line.getPoints().get(0).getY());
-        for (i = 1; i < line.getPoints().size(); i++) {
-            path.lineTo(line.getPoints().get(i).getX(), line.getPoints().get(i).getY());
-        }
-        canvas.drawPath(path, borderPaint);
     }
 
     private ArrayList<String> getLines(String text) {
