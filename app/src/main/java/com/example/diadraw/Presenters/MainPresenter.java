@@ -8,10 +8,16 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 
 import com.example.diadraw.Models.FileService;
+import com.example.diadraw.Models.WorkModels.Figure;
+import com.example.diadraw.Models.WorkModels.FigureType;
 import com.example.diadraw.Models.WorkModels.FileModel;
+import com.example.diadraw.R;
+import com.example.diadraw.Views.DrawView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainPresenter {
 
@@ -24,18 +30,22 @@ public class MainPresenter {
         return presenter;
     }
 
+    private boolean showFigurePanelFlag = false;
+
     private FileService fileService = new FileService();
     private Context context;
     private FileModel model;
 
-    private View selected_item = null;
-    private int offset_x = 0;
-    private int offset_y = 0;
-    private boolean touchFlag = false;
-    private boolean dropFlag = false;
-    private ViewGroup.LayoutParams imageParams;
+    private float x;
+    private float y;
+    private Figure selectedFigure = null;
+    private boolean dragFlag = false;
+    private float dragX = 0;
+    private float dragY = 0;
 
     private View rootView;
+
+    private DrawView drawView;
 
     private ScrollView scrollView;
 
@@ -45,8 +55,6 @@ public class MainPresenter {
     private ImageView imageViewInput;
     private ImageView imageViewOutput;
     private ImageView imageViewCondition;
-    private ImageView imageViewCycleStart;
-    private ImageView imageViewCycleEnd;
 
     private FloatingActionButton buttonMenu;
     private FloatingActionButton buttonFigures;
@@ -59,6 +67,15 @@ public class MainPresenter {
 
     public void setScrollView(ScrollView scrollView) {
         this.scrollView = scrollView;
+    }
+
+    public DrawView getDrawView() {
+        return drawView;
+    }
+
+    public void setDrawView(DrawView drawView) {
+        this.drawView = drawView;
+        this.drawView.setFigures(model.getFigures());
     }
 
     public void setImageViewStart(ImageView imageViewStart) {
@@ -83,14 +100,6 @@ public class MainPresenter {
 
     public void setImageViewCondition(ImageView imageViewCondition) {
         this.imageViewCondition = imageViewCondition;
-    }
-
-    public void setImageViewCycleStart(ImageView imageViewCycleStart) {
-        this.imageViewCycleStart = imageViewCycleStart;
-    }
-
-    public void setImageViewCycleEnd(ImageView imageViewCycleEnd) {
-        this.imageViewCycleEnd = imageViewCycleEnd;
     }
 
     public FloatingActionButton getButtonMenu() {
@@ -130,7 +139,13 @@ public class MainPresenter {
     }
 
     public void showFiguresPanel() {
-        scrollView.setVisibility(View.VISIBLE);
+        if (!showFigurePanelFlag) {
+            scrollView.setVisibility(View.VISIBLE);
+            showFigurePanelFlag = !showFigurePanelFlag;
+        } else {
+            scrollView.setVisibility(View.INVISIBLE);
+            showFigurePanelFlag = !showFigurePanelFlag;
+        }
     }
 
     public void loadData(String fileName) {
@@ -150,31 +165,153 @@ public class MainPresenter {
         }
     }
 
-    public void setImageViewsOnTouch() {
-        imageViewActivity.setOnTouchListener(touchImage);
-        imageViewCondition.setOnTouchListener(touchImage);
-        imageViewCycleEnd.setOnTouchListener(touchImage);
-        imageViewCycleStart.setOnTouchListener(touchImage);
-        imageViewEnd.setOnTouchListener(touchImage);
-        imageViewInput.setOnTouchListener(touchImage);
-        imageViewOutput.setOnTouchListener(touchImage);
-        imageViewStart.setOnTouchListener(touchImage);
+    public void setImageViewsOnClick() {
+        imageViewActivity.setOnClickListener(clickImage);
+        imageViewCondition.setOnClickListener(clickImage);
+        imageViewEnd.setOnClickListener(clickImage);
+        imageViewInput.setOnClickListener(clickImage);
+        imageViewOutput.setOnClickListener(clickImage);
+        imageViewStart.setOnClickListener(clickImage);
     }
 
-    private View.OnTouchListener touchImage = new View.OnTouchListener() {
+    private View.OnClickListener clickImage = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            int figureId = v.getId();
+            float x = drawView.getWidth() / 2;
+            float y = drawView.getHeight() / 2;
+            boolean flag;
+            long id = 1;
+            if (model.getFigures().size() > 0) {
+                id = model.getFigures().get(model.getFigures().size() - 1).getId() + 1;
+            }
+            switch (figureId) {
+                case R.id.imageViewFigureActivity:
+                    model.getFigures().add(new Figure(id, FigureType.ACTIVITY, x, y));
+                    break;
+                case R.id.imageViewFigureCondition:
+                    model.getFigures().add(new Figure(id, FigureType.CONDITION, x, y));
+                    break;
+                case R.id.imageViewFigureEnd:
+                    flag = true;
+                    for (Figure figure : model.getFigures()) {
+                        if (figure.getType().equals(FigureType.END)) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        model.getFigures().add(new Figure(id, FigureType.END, x, y));
+                    }
+                    break;
+                case R.id.imageViewFigureInput:
+                    model.getFigures().add(new Figure(id, FigureType.INPUT, x, y));
+                    break;
+                case R.id.imageViewFigureOutput:
+                    model.getFigures().add(new Figure(id, FigureType.OUTPUT, x, y));
+                    break;
+                case R.id.imageViewFigureStart:
+                    flag = true;
+                    for (Figure figure : model.getFigures()) {
+                        if (figure.getType().equals(FigureType.START)) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        model.getFigures().add(new Figure(id, FigureType.START, x, y));
+                    }
+                    break;
+            }
+            showFiguresPanel();
+            drawView.setFigures(model.getFigures());
+            drawView.invalidate();
+        }
+    };
+
+    public void setRootViewTouchListener() {
+        drawView.setOnTouchListener(touchView);
+        drawView.setOnClickListener(clickView);
+        drawView.setOnLongClickListener(longClickView);
+    }
+
+    private View.OnTouchListener touchView = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            float evX = event.getX();
+            float evY = event.getY();
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    touchFlag = true;
-                    offset_x = (int) event.getX();
-                    offset_y = (int) event.getY();
-                    selected_item = v;
-                    imageParams = v.getLayoutParams();
+                    x = event.getX();
+                    y = event.getY();
+                    if (selectedFigure != null) {
+                        float figureX = 0;
+                        float figureY = 0;
+                        float figureWidth = 0;
+                        float figureHeight = 0;
+                        switch (selectedFigure.getType()) {
+                            case FigureType.ACTIVITY:
+                                figureX = selectedFigure.getX() - 250 / 2;
+                                figureY = selectedFigure.getY() - 100 / 2;
+                                figureWidth = 500;
+                                figureHeight = 220;
+                                break;
+                            case FigureType.START:
+                            case FigureType.END:
+                                figureX = selectedFigure.getX() - 250 / 2;
+                                figureY = selectedFigure.getY() - 50 / 2;
+                                figureWidth = 500;
+                                figureHeight = 100;
+                                break;
+                            case FigureType.INPUT:
+                            case FigureType.OUTPUT:
+                                figureX = selectedFigure.getX() - 340 / 2;
+                                figureY = selectedFigure.getY() - 200 / 2;
+                                figureWidth = 680;
+                                figureHeight = 300;
+                                break;
+                            case FigureType.CONDITION:
+                                figureX = selectedFigure.getX() - 480 / 2;
+                                figureY = selectedFigure.getY() - 200 / 2;
+                                figureWidth = 960;
+                                figureHeight = 400;
+                                break;
+                        }
+                        figureWidth /= 2;
+                        figureHeight /= 2;
+                        float buttonX = figureX - 10;
+                        float buttonY = figureY - 10 - 40 * 3;
+                        if (x > buttonX && y > buttonY && x < buttonX + 40 * 3 && y < buttonY + 40 * 3) {
+                            dragFlag = true;
+                            dragX = x - selectedFigure.getX();
+                            dragY = y - selectedFigure.getY();
+                            return true;
+                        }
+                        buttonX = figureX + figureWidth - 40 * 3;
+                        if (x > buttonX && y > buttonY && x < buttonX + 40 * 3 && y < buttonY + 40 * 3) {
+                            model.getFigures().remove(selectedFigure);
+                            selectedFigure = null;
+                            drawView.setFigures(model.getFigures());
+                            drawView.setSelectedFigure(selectedFigure);
+                            drawView.invalidate();
+                            return true;
+                        }
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (dragFlag) {
+                        selectedFigure.setX(evX - dragX);
+                        selectedFigure.setY(evY - dragY);
+                        drawView.setSelectedFigure(selectedFigure);
+                        drawView.invalidate();
+                        return true;
+                    }
                     break;
                 case MotionEvent.ACTION_UP:
-                    selected_item = null;
-                    touchFlag = false;
+                    if (dragFlag) {
+                        dragFlag = false;
+                        return true;
+                    }
                     break;
                 default:
                     break;
@@ -183,13 +320,103 @@ public class MainPresenter {
         }
     };
 
-    public void setRootViewTouchListener(){
-        rootView.setOnTouchListener(touchView);
-    }
-
-    private View.OnTouchListener touchView = new View.OnTouchListener() {
+    private View.OnClickListener clickView = new View.OnClickListener() {
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onClick(View v) {
+            ArrayList<Figure> list = (ArrayList<Figure>) model.getFigures().clone();
+            Collections.reverse(list);
+            float figureX = 0;
+            float figureY = 0;
+            float figureWidth = 0;
+            float figureHeight = 0;
+            selectedFigure = null;
+            for (Figure figure : list) {
+                switch (figure.getType()) {
+                    case FigureType.ACTIVITY:
+                        figureX = figure.getX() - 250 / 2;
+                        figureY = figure.getY() - 100 / 2;
+                        figureWidth = 500;
+                        figureHeight = 220;
+                        break;
+                    case FigureType.START:
+                    case FigureType.END:
+                        figureX = figure.getX() - 250 / 2;
+                        figureY = figure.getY() - 50 / 2;
+                        figureWidth = 500;
+                        figureHeight = 100;
+                        break;
+                    case FigureType.INPUT:
+                    case FigureType.OUTPUT:
+                        figureX = figure.getX() - 340 / 2;
+                        figureY = figure.getY() - 200 / 2;
+                        figureWidth = 680;
+                        figureHeight = 300;
+                        break;
+                    case FigureType.CONDITION:
+                        figureX = figure.getX() - 480 / 2;
+                        figureY = figure.getY() - 200 / 2;
+                        figureWidth = 960;
+                        figureHeight = 400;
+                        break;
+                }
+                figureWidth /= 2;
+                figureHeight /= 2;
+                if (x > figureX && y > figureY && x < figureX + figureWidth && y < figureY + figureHeight) {
+                    selectedFigure = figure;
+                    break;
+                }
+            }
+            drawView.setAddingLine(false);
+            drawView.setSelectedFigure(selectedFigure);
+            drawView.invalidate();
+        }
+    };
+
+    private View.OnLongClickListener longClickView = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            drawView.setAddingLine(false);
+            if (selectedFigure != null) {
+                float figureX = 0;
+                float figureY = 0;
+                float figureWidth = 0;
+                float figureHeight = 0;
+                switch (selectedFigure.getType()) {
+                    case FigureType.ACTIVITY:
+                        figureX = selectedFigure.getX() - 250 / 2;
+                        figureY = selectedFigure.getY() - 100 / 2;
+                        figureWidth = 500;
+                        figureHeight = 220;
+                        break;
+                    case FigureType.START:
+                    case FigureType.END:
+                        figureX = selectedFigure.getX() - 250 / 2;
+                        figureY = selectedFigure.getY() - 50 / 2;
+                        figureWidth = 500;
+                        figureHeight = 100;
+                        break;
+                    case FigureType.INPUT:
+                    case FigureType.OUTPUT:
+                        figureX = selectedFigure.getX() - 340 / 2;
+                        figureY = selectedFigure.getY() - 200 / 2;
+                        figureWidth = 680;
+                        figureHeight = 300;
+                        break;
+                    case FigureType.CONDITION:
+                        figureX = selectedFigure.getX() - 480 / 2;
+                        figureY = selectedFigure.getY() - 200 / 2;
+                        figureWidth = 960;
+                        figureHeight = 400;
+                        break;
+                }
+                figureWidth /= 2;
+                figureHeight /= 2;
+                if (x > figureX && y > figureY && x < figureX + figureWidth && y < figureY + figureHeight) {
+                    drawView.setAddingLine(true);
+                    drawView.invalidate();
+                    return true;
+                }
+            }
             return false;
         }
     };
