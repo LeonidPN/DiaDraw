@@ -3,6 +3,7 @@ package com.example.diadraw.Views;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         presenter.getButtonMenu().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                presenter.showPopupMenu(v);
             }
         });
         presenter.setButtonSave((FloatingActionButton) findViewById(R.id.floatingActionButtonSave));
@@ -84,5 +85,21 @@ public class MainActivity extends AppCompatActivity {
         presenter.setRootViewTouchListener();
 
         presenter.draw();
+
+        presenter.setDialog(new Dialog(this));
+        presenter.getDialog().setContentView(R.layout.text_change_dialog);
+        presenter.getDialog().findViewById(R.id.buttonChange).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.changeText();
+                presenter.draw();
+            }
+        });
+        presenter.getDialog().findViewById(R.id.buttonCancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.cancel();
+            }
+        });
     }
 }

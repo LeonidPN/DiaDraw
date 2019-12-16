@@ -1,17 +1,28 @@
 package com.example.diadraw.Presenters;
 
+import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ScrollView;
+import android.widget.TextView;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.diadraw.Models.FileService;
 import com.example.diadraw.Models.WorkModels.Figure;
 import com.example.diadraw.Models.WorkModels.FigureType;
 import com.example.diadraw.Models.WorkModels.FileModel;
 import com.example.diadraw.Models.WorkModels.Line;
+import com.example.diadraw.Models.WorkModels.Point;
 import com.example.diadraw.R;
 import com.example.diadraw.Views.DrawView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -28,7 +39,11 @@ public class MainPresenter {
         if (presenter == null) {
             presenter = new MainPresenter(context);
         }
-        return presenter;
+        if (context != null) {
+            return presenter = new MainPresenter(context);
+        } else {
+            return presenter;
+        }
     }
 
     private boolean showFigurePanelFlag = false;
@@ -40,7 +55,9 @@ public class MainPresenter {
     private float x;
     private float y;
     private Figure selectedFigure = null;
+    private Line selectedLine = null;
     private boolean dragFlag = false;
+    private boolean dragLineFlag = false;
     private boolean addingLineFlag = false;
     private float dragX = 0;
     private float dragY = 0;
@@ -70,6 +87,8 @@ public class MainPresenter {
     private FloatingActionButton buttonSave;
     private FloatingActionButton buttonHome;
 
+    private Dialog dialog;
+
     public void setRootView(View rootView) {
         this.rootView = rootView;
     }
@@ -85,6 +104,11 @@ public class MainPresenter {
     public void setDrawView(DrawView drawView) {
         this.drawView = drawView;
         this.drawView.setFigures(model.getFigures());
+        this.drawView.invalidate();
+        translateX = this.drawView.getBitmapWidth() / 2;
+        translateY = this.drawView.getBitmapHight() / 2;
+        this.drawView.setTranslateX(translateX);
+        this.drawView.setTranslateY(translateY);
     }
 
     public void setImageViewStart(ImageView imageViewStart) {
@@ -143,6 +167,14 @@ public class MainPresenter {
         this.buttonHome = buttonHome;
     }
 
+    public Dialog getDialog() {
+        return dialog;
+    }
+
+    public void setDialog(Dialog dialog) {
+        this.dialog = dialog;
+    }
+
     private MainPresenter(Context context) {
         this.context = context;
     }
@@ -184,12 +216,24 @@ public class MainPresenter {
         imageViewStart.setOnClickListener(clickImage);
     }
 
+    public void changeText() {
+        String text = ((EditText) dialog.findViewById(R.id.editTextInputElementText)).getText().toString();
+        ((EditText) dialog.findViewById(R.id.editTextInputElementText)).setText("");
+        for (int i = 0; i < model.getFigures().size(); i++) {
+            if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
+                model.getFigures().get(i).setText(text);
+                break;
+            }
+        }
+        dialog.dismiss();
+    }
+
     private View.OnClickListener clickImage = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             int figureId = v.getId();
-            float x = drawView.getWidth() / 2;
-            float y = drawView.getHeight() / 2;
+            float x = (drawView.getWidth() - translateX) / 2;
+            float y = (drawView.getHeight() - translateY) / 2;
             boolean flag;
             long id = 1;
             if (model.getFigures().size() > 0) {
@@ -255,6 +299,69 @@ public class MainPresenter {
         drawView.invalidate();
     }
 
+    public void cancel() {
+        ((TextView) dialog.findViewById(R.id.textViewTextChange)).setText("");
+        dialog.dismiss();
+    }
+
+    public void showDialog() {
+        ((EditText) dialog.findViewById(R.id.editTextInputElementText)).setText(selectedFigure.getText());
+        dialog.show();
+    }
+
+    public void showPopupMenu(View v) {
+        PopupMenu popupMenu = new PopupMenu(context, v);
+        popupMenu.inflate(R.menu.popupmenu_main_form);
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                try {
+                    if (item.getItemId() == R.id.item_export) {
+                        final Dialog dialog = new Dialog(context);
+                        dialog.setContentView(R.layout.file_creation_dialog);
+                        ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
+                        dialog.findViewById(R.id.buttonCreate).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                try {
+                                    fileService.saveImage(context,
+                                            ((EditText) dialog.findViewById(R.id.editTextFileName)).getText().toString(),
+                                            drawView.getBitmap());
+                                    dialog.dismiss();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        dialog.findViewById(R.id.buttonCancel).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.show();
+                        return true;
+                    } else if (item.getItemId() == R.id.item_settings) {
+                        return true;
+                    } else if (item.getItemId() == R.id.item_generate_code) {
+                        return true;
+                    } else if (item.getItemId() == R.id.item_help) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        });
+
+        popupMenu.show();
+    }
+
     private View.OnTouchListener touchView = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -262,12 +369,12 @@ public class MainPresenter {
                 scrollView.setVisibility(View.INVISIBLE);
                 showFigurePanelFlag = !showFigurePanelFlag;
             }
-            float evX = event.getX();
-            float evY = event.getY();
+            float evX = event.getX() - translateX;
+            float evY = event.getY() - translateY;
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    x = event.getX();
-                    y = event.getY();
+                    x = event.getX() - translateX;
+                    y = event.getY() - translateY;
                     if (selectedFigure != null) {
                         float figureX = 0;
                         float figureY = 0;
@@ -301,6 +408,8 @@ public class MainPresenter {
                                 figureHeight = 400;
                                 break;
                         }
+                        figureX -= translateX / 2;
+                        figureY -= translateY / 2;
                         figureWidth /= 2;
                         figureHeight /= 2;
                         float buttonX = figureX - 10;
@@ -363,6 +472,45 @@ public class MainPresenter {
                             return true;
                         }
                     }
+                    if (selectedLine != null) {
+                        for (int j = 0; j < selectedLine.getPoints().size(); j++) {
+                            float x1 = selectedLine.getPoints().get(j).getX() - translateX / 2;
+                            float y1 = selectedLine.getPoints().get(j).getY() - translateY / 2;
+                            if (j > 0 && j < selectedLine.getPoints().size() - 1) {
+                                if (Math.sqrt((evX - x1) * (evX - x1) + (evY - y1) * (evY - y1)) <= 30) {
+                                    dragLineFlag = true;
+                                    dragX = x - selectedLine.getPoints().get(j).getX();
+                                    dragY = y - selectedLine.getPoints().get(j).getY();
+                                    return true;
+                                }
+                            }
+                            x1 = selectedLine.getPoints().get(0).getX() - translateX / 2;
+                            y1 = selectedLine.getPoints().get(0).getY() - translateY / 2;
+                            if (x > x1 - 100 && y > y1 + 25 && x < x1 - 100 + 40 * 3 && y < y1 + 25 + 40 * 3) {
+                                model.getLines().remove(selectedLine);
+                                for (int i = 0; i < model.getFigures().size(); i++) {
+                                    if (model.getFigures().get(i).getId() == selectedLine.getFigureStartId()) {
+                                        if (model.getFigures().get(i).getType().equals(FigureType.CONDITION)) {
+                                            if (model.getFigures().get(i).getOutputLeft().getId() ==
+                                                    selectedLine.getFigureStartId()) {
+                                                model.getFigures().get(i).setOutputLeft(null);
+                                            } else {
+                                                model.getFigures().get(i).setOutputRight(null);
+                                            }
+                                        } else {
+                                            model.getFigures().get(i).setOutput(null);
+                                        }
+                                    }
+                                }
+                                selectedLine = null;
+                                drawView.setLines(model.getLines());
+                                drawView.setFigures(model.getFigures());
+                                drawView.setSelectedLine(selectedLine);
+                                drawView.invalidate();
+                                return true;
+                            }
+                        }
+                    }
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (dragFlag) {
@@ -386,21 +534,41 @@ public class MainPresenter {
                         drawView.setSelectedFigure(selectedFigure);
                         drawView.invalidate();
                         return true;
+                    } else if (dragLineFlag) {
+                        for (int i = 0; i < model.getLines().size(); i++) {
+                            if (model.getLines().get(i).equals(selectedLine)) {
+                                for (int j = 1; j < selectedLine.getPoints().size() - 1; j++) {
+                                    float x1 = selectedLine.getPoints().get(j).getX() - translateX / 2;
+                                    float y1 = selectedLine.getPoints().get(j).getY() - translateY / 2;
+                                    if (Math.sqrt((evX - x1) * (evX - x1) + (evY - y1) * (evY - y1)) <= 30) {
+                                        model.getLines().get(i).getPoints().get(j).setX(evX - dragX);
+                                        model.getLines().get(i).getPoints().get(j).setY(evY - dragY);
+                                        drawView.setLines(model.getLines());
+                                        drawView.invalidate();
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        return true;
                     } else {
                         drawView.setTranslateX(translateX + evX - x);
                         drawView.setTranslateY(translateY + evY - y);
                         drawView.invalidate();
-                        return true;
                     }
+                    break;
                 case MotionEvent.ACTION_UP:
                     if (dragFlag) {
                         dragFlag = false;
                         return true;
-                    }else {
+                    } else if (dragLineFlag) {
+                        dragLineFlag = false;
+                        return true;
+                    } else {
                         translateX += evX - x;
                         translateY += evY - y;
-                        return true;
                     }
+                    break;
                 default:
                     break;
             }
@@ -418,6 +586,7 @@ public class MainPresenter {
             float figureWidth = 0;
             float figureHeight = 0;
             Figure newFigure = null;
+            Line newLine = null;
             for (Figure figure : list) {
                 switch (figure.getType()) {
                     case FigureType.ACTIVITY:
@@ -447,6 +616,8 @@ public class MainPresenter {
                         figureHeight = 400;
                         break;
                 }
+                figureX -= translateX / 2;
+                figureY -= translateY / 2;
                 figureWidth /= 2;
                 figureHeight /= 2;
                 if (x > figureX && y > figureY && x < figureX + figureWidth && y < figureY + figureHeight) {
@@ -478,6 +649,12 @@ public class MainPresenter {
                             }
                             addingLineFlag = false;
                         }
+                    } else if (selectedFigure != null && figure.getId() == selectedFigure.getId()) {
+                        if (!selectedFigure.getType().equals(FigureType.START) &&
+                                !selectedFigure.getType().equals(FigureType.END)) {
+                            showDialog();
+                        }
+                        newFigure = figure;
                     } else {
                         newFigure = figure;
                     }
@@ -485,9 +662,36 @@ public class MainPresenter {
                 }
             }
             selectedFigure = newFigure;
+            if (selectedFigure == null) {
+                for (int i = 0; i < model.getLines().size(); i++) {
+                    for (int j = 0; j < model.getLines().get(i).getPoints().size() - 1; j++) {
+                        float x1 = model.getLines().get(i).getPoints().get(j).getX() - translateX / 2;
+                        float y1 = model.getLines().get(i).getPoints().get(j).getY() - translateY / 2;
+                        float x2 = model.getLines().get(i).getPoints().get(j + 1).getX() - translateX / 2;
+                        float y2 = model.getLines().get(i).getPoints().get(j + 1).getY() - translateY / 2;
+                        float k = (y1 - y2) / (x1 - x2);
+                        float b = y2 - k * x2;
+
+                        if ((k * x - y + b) / Math.sqrt(k * k + 1) <= 30 &&
+                                (k * x - y + b) / Math.sqrt(k * k + 1) >= 0) {
+                            if (x >= x1 && x <= x2 || x <= x1 && x >= x2) {
+                                if (y >= y1 && y <= y2 || y <= y1 && y >= y2) {
+                                    newLine = model.getLines().get(i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (newLine != null) {
+                        break;
+                    }
+                }
+            }
+            selectedLine = newLine;
             addingLineFlag = false;
             drawView.setAddingLine(false);
             drawView.setSelectedFigure(selectedFigure);
+            drawView.setSelectedLine(selectedLine);
             drawView.setLines(model.getLines());
             drawView.invalidate();
         }
@@ -531,6 +735,8 @@ public class MainPresenter {
                         figureHeight = 400;
                         break;
                 }
+                figureX -= translateX / 2;
+                figureY -= translateY / 2;
                 figureWidth /= 2;
                 figureHeight /= 2;
                 if (x > figureX && y > figureY && x < figureX + figureWidth && y < figureY + figureHeight) {
@@ -551,6 +757,55 @@ public class MainPresenter {
                         }
                     }
                     return true;
+                }
+            } else if (selectedLine != null) {
+                int i;
+                for (i = 0; i < model.getLines().size(); i++) {
+                    if (model.getLines().get(i).equals(selectedLine)) {
+                        break;
+                    }
+                }
+                float lineX = 0;
+                float lineY = 0;
+                int p = 0;
+                /*for (int j = 1; j < selectedLine.getPoints().size() - 1; j++) {
+                    float x1 = selectedLine.getPoints().get(j).getX() - translateX / 2;
+                    float y1 = selectedLine.getPoints().get(j).getY() - translateY / 2;
+
+                    if (Math.sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1)) <= 30) {
+                        model.getLines().get(i).getPoints().remove(selectedLine.getPoints().get(j));
+                        selectedLine = null;
+                        drawView.setSelectedLine(selectedLine);
+                        drawView.setLines(model.getLines());
+                        drawView.invalidate();
+                        return true;
+                    }
+                }*/
+                for (int j = 0; j < selectedLine.getPoints().size() - 1; j++) {
+                    float x1 = selectedLine.getPoints().get(j).getX() - translateX / 2;
+                    float y1 = selectedLine.getPoints().get(j).getY() - translateY / 2;
+                    float x2 = selectedLine.getPoints().get(j + 1).getX() - translateX / 2;
+                    float y2 = selectedLine.getPoints().get(j + 1).getY() - translateY / 2;
+                    float k = (y1 - y2) / (x1 - x2);
+                    float b = y2 - k * x2;
+
+                    if ((k * x - y + b) / Math.sqrt(k * k + 1) <= 30 &&
+                            (k * x - y + b) / Math.sqrt(k * k + 1) >= 0) {
+                        p = j;
+                        float r1 = Math.abs(x - (y - b) / k);
+                        float r2 = Math.abs(y - (k * x + b));
+                        if (r1 < r2) {
+                            lineX = (y - b) / k;
+                            lineY = y;
+                        } else {
+                            lineX = x;
+                            lineY = k * x + b;
+                        }
+                        model.getLines().get(i).getPoints().add(p + 1, new Point(lineX, lineY));
+                        drawView.setLines(model.getLines());
+                        drawView.invalidate();
+                        return true;
+                    }
                 }
             }
             return false;

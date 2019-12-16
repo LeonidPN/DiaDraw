@@ -1,6 +1,8 @@
 package com.example.diadraw.Models;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Environment;
 
 import com.example.diadraw.Models.WorkModels.Figure;
 import com.example.diadraw.Models.WorkModels.FileModel;
@@ -9,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,6 +23,16 @@ import java.util.List;
 public class FileService {
 
     private static final String EXTENSION = ".json";
+
+    public void saveImage(Context context, String fileName, Bitmap bitmap) throws IOException {
+        String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+        File fileDir = new File(dir);
+        File file = new File(fileDir, fileName + ".svg");
+        FileOutputStream fos = new FileOutputStream(file);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        fos.flush();
+        fos.close();
+    }
 
     public List<FileModel> getFilesList(Context context) throws IOException {
         Gson gson = new GsonBuilder().create();

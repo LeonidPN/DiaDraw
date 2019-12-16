@@ -8,4 +8,9 @@
     <string name="create">Создать</string>
     <string name="file_rename">Переименование файла</string>
     <string name="change">Изменить</string>
+    <string name="text_change">Введите текст элемента:</string>
+    <string name="export">Экспортировать</string>
+    <string name="settings">Настройки</string>
+    <string name="generate_code">Сгенерировать код</string>
+    <string name="help">Помощь</string>
 </resources>

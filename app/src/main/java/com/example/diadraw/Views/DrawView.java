@@ -45,6 +45,12 @@ public class DrawView extends View {
 
     private float translateY;
 
+    private Bitmap bitmap;
+
+    private int bitmapWidth;
+
+    private int bitmapHight;
+
     public DrawView(Context context) {
         super(context);
 
@@ -106,9 +112,86 @@ public class DrawView extends View {
         this.translateY = translateY;
     }
 
+    public int getBitmapWidth() {
+        return bitmapWidth;
+    }
+
+    public int getBitmapHight() {
+        return bitmapHight;
+    }
+
+    public Bitmap getBitmap() {
+        bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHight,
+                Bitmap.Config.ARGB_8888);
+        Canvas canvasSaving = new Canvas(bitmap);
+        canvasSaving.drawColor(Color.WHITE);
+        canvasSaving.scale(0.5f, 0.5f);
+        canvasSaving.translate(translateX, translateY);
+        for (Line line : lines) {
+            drawLine(canvasSaving, line);
+        }
+        for (Figure figure : figures) {
+            switch (figure.getType()) {
+                case FigureType.ACTIVITY:
+                    drawActivityFigure(canvasSaving, figure);
+                    break;
+                case FigureType.START:
+                    drawStartFigure(canvasSaving, figure);
+                    break;
+                case FigureType.END:
+                    drawEndFigure(canvasSaving, figure);
+                    break;
+                case FigureType.INPUT:
+                    drawInputFigure(canvasSaving, figure);
+                    break;
+                case FigureType.OUTPUT:
+                    drawOutputFigure(canvasSaving, figure);
+                    break;
+                case FigureType.CONDITION:
+                    drawConditionFigure(canvasSaving, figure);
+                    break;
+            }
+        }
+        float x1 = 0;
+        float y1 = 0;
+        float x2 = 0;
+        float y2 = 0;
+        if (figures.size() > 0) {
+            x1 = figures.get(0).getX();
+            y1 = figures.get(0).getY();
+            x2 = figures.get(0).getX();
+            y2 = figures.get(0).getY();
+        }
+        for (int i = 1; i < figures.size(); i++) {
+            float x = figures.get(i).getX();
+            float y = figures.get(i).getY();
+            if (x < x1) {
+                x1 = x;
+            }
+            if (y < y1) {
+                y1 = y;
+            }
+            if (x > x2) {
+                x2 = x;
+            }
+            if (y > y2) {
+                y2 = y;
+            }
+        }
+        x1 -= 600;
+        y1 -= 600;
+        x2 += 600;
+        y2 += 600;
+        return Bitmap.createBitmap(bitmap, Math.max((int) x1, 0), Math.max((int) y1, 0),
+                Math.min((int) (x2 - x1), bitmapWidth), Math.min((int) (y2 - y1), bitmapHight));
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        bitmapWidth = canvas.getMaximumBitmapWidth();
+        bitmapHight = canvas.getMaximumBitmapHeight();
+        canvas.drawColor(Color.WHITE);
         canvas.scale(0.5f, 0.5f);
         canvas.translate(translateX, translateY);
         for (Line line : lines) {
@@ -137,6 +220,7 @@ public class DrawView extends View {
             }
         }
         drawSelectedFigure(canvas);
+        drawSelectedLine(canvas);
     }
 
     private void drawActivityFigure(Canvas canvas, Figure figure) {
@@ -147,7 +231,7 @@ public class DrawView extends View {
 
         ArrayList<String> lines = getLines(figure.getText());
         for (int i = 0; i < lines.size(); i++) {
-            canvas.drawText(lines.get(i), x
+            canvas.drawText(lines.get(lines.size() - 1 - i), x
                     , y + 90 - 40 * i, fontPaint);
         }
     }
@@ -188,7 +272,7 @@ public class DrawView extends View {
 
         ArrayList<String> lines = getLines(figure.getText());
         for (int i = 0; i < lines.size(); i++) {
-            canvas.drawText(lines.get(i), x
+            canvas.drawText(lines.get(lines.size() - 1 - i), x
                     , y + 90 - 40 * i, fontPaint);
         }
     }
@@ -226,7 +310,7 @@ public class DrawView extends View {
 
         ArrayList<String> lines = getLines(figure.getText());
         for (int i = 0; i < lines.size(); i++) {
-            canvas.drawText(lines.get(i), x
+            canvas.drawText(lines.get(lines.size() - 1 - i), x
                     , y + 90 - 40 * i, fontPaint);
         }
     }
@@ -264,7 +348,7 @@ public class DrawView extends View {
 
         ArrayList<String> lines = getLines(figure.getText());
         for (int i = 0; i < lines.size(); i++) {
-            canvas.drawText(lines.get(i), x
+            canvas.drawText(lines.get(lines.size() - 1 - i), x
                     , y + 90 - 40 * i, fontPaint);
         }
     }
@@ -367,6 +451,32 @@ public class DrawView extends View {
         for (int i = 0; i < line.getPoints().size() - 1; i++) {
             canvas.drawLine(line.getPoints().get(i).getX() * 2, line.getPoints().get(i).getY() * 2,
                     line.getPoints().get(i + 1).getX() * 2, line.getPoints().get(i + 1).getY() * 2, borderPaint);
+        }
+    }
+
+    private void drawSelectedLine(Canvas canvas) {
+        if (selectedLine != null) {
+            Bitmap bitmapSource;
+
+            bitmapSource = BitmapFactory.decodeResource(getResources(), R.drawable.button_delete);
+            Bitmap deleteImage = Bitmap.createBitmap(bitmapSource);
+            borderPaint.setColor(Color.GREEN);
+            figurePaint.setColor(Color.GREEN);
+            for (int i = 0; i < selectedLine.getPoints().size() - 1; i++) {
+                if (i == 0) {
+                    float x1 = selectedLine.getPoints().get(i).getX() * 2 - 200;
+                    float y1 = selectedLine.getPoints().get(i).getY() * 2 + 50;
+                    canvas.drawBitmap(deleteImage, x1, y1, new Paint(Paint.ANTI_ALIAS_FLAG));
+                }
+                canvas.drawLine(selectedLine.getPoints().get(i).getX() * 2, selectedLine.getPoints().get(i).getY() * 2,
+                        selectedLine.getPoints().get(i + 1).getX() * 2, selectedLine.getPoints().get(i + 1).getY() * 2, borderPaint);
+                canvas.drawCircle(selectedLine.getPoints().get(i).getX() * 2,
+                        selectedLine.getPoints().get(i).getY() * 2, 20, figurePaint);
+                canvas.drawCircle(selectedLine.getPoints().get(i + 1).getX() * 2,
+                        selectedLine.getPoints().get(i + 1).getY() * 2, 20, figurePaint);
+            }
+            borderPaint.setColor(borderColor);
+            figurePaint.setColor(figureColor);
         }
     }
 
