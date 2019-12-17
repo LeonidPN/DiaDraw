@@ -49,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
                 .findViewById(R.id.linerLayout).findViewById(R.id.imageViewFigureOutput));
         presenter.setImageViewStart((ImageView) findViewById(R.id.scrollView)
                 .findViewById(R.id.linerLayout).findViewById(R.id.imageViewFigureStart));
+        presenter.setImageViewCycleStart((ImageView) findViewById(R.id.scrollView)
+                .findViewById(R.id.linerLayout).findViewById(R.id.imageViewFigureCycleStart));
+        presenter.setImageViewCycleEnd((ImageView) findViewById(R.id.scrollView)
+                .findViewById(R.id.linerLayout).findViewById(R.id.imageViewFigureCycleEnd));
 
         presenter.setImageViewsOnClick();
 

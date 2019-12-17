@@ -33,6 +33,12 @@ public class Line {
                     points.add(new Point(start.getX() + 480 / 2, start.getY()));
                 }
                 break;
+            case FigureType.CYCLE_START:
+                points.add(new Point(start.getX(), start.getY() + 110 / 2));
+                break;
+            case FigureType.CYCLE_END:
+                points.add(new Point(start.getX(), start.getY() + 170 / 2));
+                break;
         }
         switch (end.getType()) {
             case FigureType.ACTIVITY:
@@ -48,6 +54,12 @@ public class Line {
                 break;
             case FigureType.CONDITION:
                 points.add(new Point(end.getX(), end.getY() - 200 / 2));
+                break;
+            case FigureType.CYCLE_START:
+                points.add(new Point(end.getX(), end.getY() - 170 / 2));
+                break;
+            case FigureType.CYCLE_END:
+                points.add(new Point(end.getX(), end.getY() - 110 / 2));
                 break;
         }
     }

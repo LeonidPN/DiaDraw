@@ -150,6 +150,12 @@ public class DrawView extends View {
                 case FigureType.CONDITION:
                     drawConditionFigure(canvasSaving, figure);
                     break;
+                case FigureType.CYCLE_START:
+                    drawCycleStartFigure(canvasSaving, figure);
+                    break;
+                case FigureType.CYCLE_END:
+                    drawCycleEndFigure(canvasSaving, figure);
+                    break;
             }
         }
         float x1 = 0;
@@ -217,6 +223,12 @@ public class DrawView extends View {
                 case FigureType.CONDITION:
                     drawConditionFigure(canvas, figure);
                     break;
+                case FigureType.CYCLE_START:
+                    drawCycleStartFigure(canvas, figure);
+                    break;
+                case FigureType.CYCLE_END:
+                    drawCycleEndFigure(canvas, figure);
+                    break;
             }
         }
         drawSelectedFigure(canvas);
@@ -275,6 +287,76 @@ public class DrawView extends View {
             canvas.drawText(lines.get(lines.size() - 1 - i), x
                     , y + 90 - 40 * i, fontPaint);
         }
+    }
+
+    private void drawCycleStartFigure(Canvas canvas, Figure figure) {
+        float x = figure.getX() * 2;
+        float y = figure.getY() * 2;
+
+        float[] points = new float[12];
+        points[0] = x - 250;
+        points[1] = y + 110;
+        points[2] = x - 250;
+        points[3] = y - 110;
+        points[4] = x - 200;
+        points[5] = y - 160;
+        points[6] = x + 200;
+        points[7] = y - 160;
+        points[8] = x + 250;
+        points[9] = y - 110;
+        points[10] = x + 250;
+        points[11] = y + 110;
+
+        canvas.drawVertices(Canvas.VertexMode.TRIANGLES, points.length, points, 0,
+                null, 0, null, 0, null, 0, 0, figurePaint);
+        Path path = new Path();
+        path.moveTo(points[0], points[1]);
+        path.lineTo(points[2], points[3]);
+        path.lineTo(points[4], points[5]);
+        path.lineTo(points[6], points[7]);
+        path.lineTo(points[8], points[9]);
+        path.lineTo(points[10], points[11]);
+        path.lineTo(points[0], points[1]);
+        canvas.drawPath(path, figurePaint);
+        canvas.drawPath(path, borderPaint);
+
+        ArrayList<String> lines = getLines(figure.getText());
+        for (int i = 0; i < lines.size(); i++) {
+            canvas.drawText(lines.get(lines.size() - 1 - i), x
+                    , y + 90 - 40 * i, fontPaint);
+        }
+    }
+
+    private void drawCycleEndFigure(Canvas canvas, Figure figure) {
+        float x = figure.getX() * 2;
+        float y = figure.getY() * 2;
+
+        float[] points = new float[12];
+        points[0] = x - 250;
+        points[1] = y + 110;
+        points[2] = x - 250;
+        points[3] = y - 110;
+        points[4] = x + 250;
+        points[5] = y - 110;
+        points[6] = x + 250;
+        points[7] = y + 110;
+        points[8] = x + 200;
+        points[9] = y + 160;
+        points[10] = x - 200;
+        points[11] = y + 160;
+
+        canvas.drawVertices(Canvas.VertexMode.TRIANGLES, points.length, points, 0,
+                null, 0, null, 0, null, 0, 0, figurePaint);
+        Path path = new Path();
+        path.moveTo(points[0], points[1]);
+        path.lineTo(points[2], points[3]);
+        path.lineTo(points[4], points[5]);
+        path.lineTo(points[6], points[7]);
+        path.lineTo(points[8], points[9]);
+        path.lineTo(points[10], points[11]);
+        path.lineTo(points[0], points[1]);
+        canvas.drawPath(path, figurePaint);
+        canvas.drawPath(path, borderPaint);
     }
 
     private void drawInputFigure(Canvas canvas, Figure figure) {
@@ -436,6 +518,20 @@ public class DrawView extends View {
                     x1 = x - 490;
                     y1 = y - 210 - 45 * 3;
                     x2 = x + 490 - 40 * 3;
+                    y2 = y1;
+                    break;
+                case FigureType.CYCLE_START:
+                    canvas.drawRect(x - 260, y - 170, x + 260, y + 120, borderPaint);
+                    x1 = x - 260;
+                    y1 = y - 170 - 45 * 3;
+                    x2 = x + 260 - 40 * 3;
+                    y2 = y1;
+                    break;
+                case FigureType.CYCLE_END:
+                    canvas.drawRect(x - 260, y - 120, x + 260, y + 170, borderPaint);
+                    x1 = x - 260;
+                    y1 = y - 120 - 45 * 3;
+                    x2 = x + 260 - 40 * 3;
                     y2 = y1;
                     break;
             }

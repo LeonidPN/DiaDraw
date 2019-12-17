@@ -81,6 +81,8 @@ public class MainPresenter {
     private ImageView imageViewInput;
     private ImageView imageViewOutput;
     private ImageView imageViewCondition;
+    private ImageView imageViewCycleStart;
+    private ImageView imageViewCycleEnd;
 
     private FloatingActionButton buttonMenu;
     private FloatingActionButton buttonFigures;
@@ -133,6 +135,14 @@ public class MainPresenter {
 
     public void setImageViewCondition(ImageView imageViewCondition) {
         this.imageViewCondition = imageViewCondition;
+    }
+
+    public void setImageViewCycleStart(ImageView imageViewCycleStart) {
+        this.imageViewCycleStart = imageViewCycleStart;
+    }
+
+    public void setImageViewCycleEnd(ImageView imageViewCycleEnd) {
+        this.imageViewCycleEnd = imageViewCycleEnd;
     }
 
     public FloatingActionButton getButtonMenu() {
@@ -214,6 +224,8 @@ public class MainPresenter {
         imageViewInput.setOnClickListener(clickImage);
         imageViewOutput.setOnClickListener(clickImage);
         imageViewStart.setOnClickListener(clickImage);
+        imageViewCycleStart.setOnClickListener(clickImage);
+        imageViewCycleEnd.setOnClickListener(clickImage);
     }
 
     public void changeText() {
@@ -275,6 +287,12 @@ public class MainPresenter {
                     if (flag) {
                         model.getFigures().add(new Figure(id, FigureType.START, x, y));
                     }
+                    break;
+                case R.id.imageViewFigureCycleStart:
+                    model.getFigures().add(new Figure(id, FigureType.CYCLE_START, x, y));
+                    break;
+                case R.id.imageViewFigureCycleEnd:
+                    model.getFigures().add(new Figure(id, FigureType.CYCLE_END, x, y));
                     break;
             }
             showFiguresPanel();
@@ -405,6 +423,18 @@ public class MainPresenter {
                                 figureX = selectedFigure.getX() - 480 / 2;
                                 figureY = selectedFigure.getY() - 200 / 2;
                                 figureWidth = 960;
+                                figureHeight = 400;
+                                break;
+                            case FigureType.CYCLE_START:
+                                figureX = selectedFigure.getX() - 250 / 2;
+                                figureY = selectedFigure.getY() - 160 / 2;
+                                figureWidth = 500;
+                                figureHeight = 400;
+                                break;
+                            case FigureType.CYCLE_END:
+                                figureX = selectedFigure.getX() - 250 / 2;
+                                figureY = selectedFigure.getY() - 100 / 2;
+                                figureWidth = 500;
                                 figureHeight = 400;
                                 break;
                         }
@@ -615,6 +645,18 @@ public class MainPresenter {
                         figureWidth = 960;
                         figureHeight = 400;
                         break;
+                    case FigureType.CYCLE_START:
+                        figureX = figure.getX() - 250 / 2;
+                        figureY = figure.getY() - 160 / 2;
+                        figureWidth = 500;
+                        figureHeight = 270;
+                        break;
+                    case FigureType.CYCLE_END:
+                        figureX = figure.getX() - 250 / 2;
+                        figureY = figure.getY() - 100 / 2;
+                        figureWidth = 500;
+                        figureHeight = 270;
+                        break;
                 }
                 figureX -= translateX / 2;
                 figureY -= translateY / 2;
@@ -623,35 +665,51 @@ public class MainPresenter {
                 if (x > figureX && y > figureY && x < figureX + figureWidth && y < figureY + figureHeight) {
                     if (selectedFigure != null && figure.getId() != selectedFigure.getId()) {
                         if (addingLineFlag) {
-                            if (selectedFigure.getType().equals(FigureType.CONDITION)) {
-                                if (selectedFigure.getOutputLeft() == null) {
-                                    for (int i = 0; i < model.getFigures().size(); i++) {
-                                        if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
-                                            model.getFigures().get(i).setOutputLeft(figure);
-                                        }
+                            boolean flag = true;
+                            for (Figure figure1 : model.getFigures()) {
+                                if (figure1.getType().equals(FigureType.CONDITION)) {
+                                    if (figure1.getOutputLeft() != null && figure1.getOutputLeft().equals(figure) ||
+                                            figure1.getOutputRight() != null && figure1.getOutputRight().equals(figure)) {
+                                        flag = false;
                                     }
-                                    model.getLines().add(new Line(selectedFigure, figure));
+                                } else {
+                                    if (figure1.getOutput() != null && figure1.getOutput().equals(figure)) {
+                                        flag = false;
+                                    }
+                                }
+                            }
+                            if (flag) {
+                                if (selectedFigure.getType().equals(FigureType.CONDITION)) {
+                                    if (selectedFigure.getOutputLeft() == null) {
+                                        for (int i = 0; i < model.getFigures().size(); i++) {
+                                            if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
+                                                model.getFigures().get(i).setOutputLeft(figure);
+                                            }
+                                        }
+                                        model.getLines().add(new Line(selectedFigure, figure));
+                                    } else {
+                                        for (int i = 0; i < model.getFigures().size(); i++) {
+                                            if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
+                                                model.getFigures().get(i).setOutputRight(figure);
+                                            }
+                                        }
+                                        model.getLines().add(new Line(selectedFigure, figure));
+                                    }
                                 } else {
                                     for (int i = 0; i < model.getFigures().size(); i++) {
                                         if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
-                                            model.getFigures().get(i).setOutputRight(figure);
+                                            model.getFigures().get(i).setOutput(figure);
                                         }
                                     }
                                     model.getLines().add(new Line(selectedFigure, figure));
                                 }
-                            } else {
-                                for (int i = 0; i < model.getFigures().size(); i++) {
-                                    if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
-                                        model.getFigures().get(i).setOutput(figure);
-                                    }
-                                }
-                                model.getLines().add(new Line(selectedFigure, figure));
                             }
                             addingLineFlag = false;
                         }
                     } else if (selectedFigure != null && figure.getId() == selectedFigure.getId()) {
                         if (!selectedFigure.getType().equals(FigureType.START) &&
-                                !selectedFigure.getType().equals(FigureType.END)) {
+                                !selectedFigure.getType().equals(FigureType.END) &&
+                                !selectedFigure.getType().equals(FigureType.CYCLE_END)) {
                             showDialog();
                         }
                         newFigure = figure;
@@ -733,6 +791,18 @@ public class MainPresenter {
                         figureY = selectedFigure.getY() - 200 / 2;
                         figureWidth = 960;
                         figureHeight = 400;
+                        break;
+                    case FigureType.CYCLE_START:
+                        figureX = selectedFigure.getX() - 250 / 2;
+                        figureY = selectedFigure.getY() - 160 / 2;
+                        figureWidth = 500;
+                        figureHeight = 270;
+                        break;
+                    case FigureType.CYCLE_END:
+                        figureX = selectedFigure.getX() - 250 / 2;
+                        figureY = selectedFigure.getY() - 100 / 2;
+                        figureWidth = 500;
+                        figureHeight = 270;
                         break;
                 }
                 figureX -= translateX / 2;
