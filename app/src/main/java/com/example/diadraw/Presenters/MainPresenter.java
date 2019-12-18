@@ -3,6 +3,7 @@ package com.example.diadraw.Presenters;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,6 +25,7 @@ import com.example.diadraw.Models.WorkModels.FileModel;
 import com.example.diadraw.Models.WorkModels.Line;
 import com.example.diadraw.Models.WorkModels.Point;
 import com.example.diadraw.R;
+import com.example.diadraw.Views.CodeActivity;
 import com.example.diadraw.Views.DrawView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -292,7 +294,20 @@ public class MainPresenter {
                     model.getFigures().add(new Figure(id, FigureType.CYCLE_START, x, y));
                     break;
                 case R.id.imageViewFigureCycleEnd:
-                    model.getFigures().add(new Figure(id, FigureType.CYCLE_END, x, y));
+                    int count = 0;
+                    for (Figure figure : model.getFigures()) {
+                        if (figure.getType().equals(FigureType.CYCLE_START)) {
+                            count++;
+                            break;
+                        }
+                        if (figure.getType().equals(FigureType.CYCLE_END)) {
+                            count--;
+                            break;
+                        }
+                    }
+                    if (count > 0) {
+                        model.getFigures().add(new Figure(id, FigureType.CYCLE_END, x, y));
+                    }
                     break;
             }
             showFiguresPanel();
@@ -364,6 +379,10 @@ public class MainPresenter {
                     } else if (item.getItemId() == R.id.item_settings) {
                         return true;
                     } else if (item.getItemId() == R.id.item_generate_code) {
+                        saveFile();
+                        Intent intent = new Intent(context, CodeActivity.class);
+                        intent.putExtra("filename", model.getName());
+                        context.startActivity(intent);
                         return true;
                     } else if (item.getItemId() == R.id.item_help) {
                         return true;
@@ -472,15 +491,14 @@ public class MainPresenter {
                         if (x > buttonX && y > buttonY && x < buttonX + 40 * 3 && y < buttonY + 40 * 3) {
                             model.getFigures().remove(selectedFigure);
                             for (int i = 0; i < model.getLines().size(); i++) {
-                                if (model.getLines().get(i).getFigureEndId() == selectedFigure.getId() ||
-                                        model.getLines().get(i).getFigureStartId() == selectedFigure.getId()) {
+                                if (model.getLines().get(i).getFigureStartId() == selectedFigure.getId() ||
+                                        model.getLines().get(i).getFigureEndId() == selectedFigure.getId()) {
                                     for (int j = 0; j < model.getFigures().size(); j++) {
                                         if (model.getFigures().get(j).getId() ==
-                                                model.getLines().get(i).getFigureStartId() &&
-                                                model.getFigures().get(j).getId() != selectedFigure.getId()) {
+                                                model.getLines().get(i).getFigureStartId()) {
                                             if (model.getFigures().get(j).getType()
                                                     .equals(FigureType.CONDITION)) {
-                                                if (model.getFigures().get(j).getOutputLeft() == selectedFigure) {
+                                                if (model.getFigures().get(j).getOutputLeft().getId() == selectedFigure.getId()) {
                                                     model.getFigures().get(j).setOutputLeft(null);
                                                 } else {
                                                     model.getFigures().get(j).setOutputRight(null);
@@ -665,45 +683,31 @@ public class MainPresenter {
                 if (x > figureX && y > figureY && x < figureX + figureWidth && y < figureY + figureHeight) {
                     if (selectedFigure != null && figure.getId() != selectedFigure.getId()) {
                         if (addingLineFlag) {
-                            boolean flag = true;
-                            for (Figure figure1 : model.getFigures()) {
-                                if (figure1.getType().equals(FigureType.CONDITION)) {
-                                    if (figure1.getOutputLeft() != null && figure1.getOutputLeft().equals(figure) ||
-                                            figure1.getOutputRight() != null && figure1.getOutputRight().equals(figure)) {
-                                        flag = false;
-                                    }
-                                } else {
-                                    if (figure1.getOutput() != null && figure1.getOutput().equals(figure)) {
-                                        flag = false;
-                                    }
-                                }
-                            }
-                            if (flag) {
-                                if (selectedFigure.getType().equals(FigureType.CONDITION)) {
-                                    if (selectedFigure.getOutputLeft() == null) {
-                                        for (int i = 0; i < model.getFigures().size(); i++) {
-                                            if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
-                                                model.getFigures().get(i).setOutputLeft(figure);
-                                            }
+                            if (selectedFigure.getType().equals(FigureType.CONDITION)) {
+                                if (selectedFigure.getOutputLeft() == null) {
+                                    for (int i = 0; i < model.getFigures().size(); i++) {
+                                        if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
+                                            model.getFigures().get(i).setOutputLeft(figure);
                                         }
-                                        model.getLines().add(new Line(selectedFigure, figure));
-                                    } else {
-                                        for (int i = 0; i < model.getFigures().size(); i++) {
-                                            if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
-                                                model.getFigures().get(i).setOutputRight(figure);
-                                            }
-                                        }
-                                        model.getLines().add(new Line(selectedFigure, figure));
                                     }
+                                    model.getLines().add(new Line(selectedFigure, figure));
                                 } else {
                                     for (int i = 0; i < model.getFigures().size(); i++) {
                                         if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
-                                            model.getFigures().get(i).setOutput(figure);
+                                            model.getFigures().get(i).setOutputRight(figure);
                                         }
                                     }
                                     model.getLines().add(new Line(selectedFigure, figure));
                                 }
+                            } else {
+                                for (int i = 0; i < model.getFigures().size(); i++) {
+                                    if (model.getFigures().get(i).getId() == selectedFigure.getId()) {
+                                        model.getFigures().get(i).setOutput(figure);
+                                    }
+                                }
+                                model.getLines().add(new Line(selectedFigure, figure));
                             }
+
                             addingLineFlag = false;
                         }
                     } else if (selectedFigure != null && figure.getId() == selectedFigure.getId()) {

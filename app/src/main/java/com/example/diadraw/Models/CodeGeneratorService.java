@@ -9,8 +9,12 @@ public class CodeGeneratorService {
 
     private static final String INCORRECT = "Некорректная блок-схема";
 
+    private ArrayList<String> code = new ArrayList<>();
+
+    private ArrayList<Figure> figures = new ArrayList<>();
+
     public ArrayList<String> getCode(ArrayList<Figure> figures) {
-        ArrayList<String> code = new ArrayList<>();
+        this.figures = figures;
         if (!startEnd(figures)) {
             code = new ArrayList<>();
             code.add(INCORRECT);
@@ -24,16 +28,63 @@ public class CodeGeneratorService {
                     return code;
                 }
             } else {
-                if (figure.getOutput() == null) {
-                    code = new ArrayList<>();
-                    code.add(INCORRECT);
-                    return code;
+                if (!figure.getType().equals(FigureType.END)) {
+                    if (figure.getOutput() == null) {
+                        code = new ArrayList<>();
+                        code.add(INCORRECT);
+                        return code;
+                    }
                 }
             }
         }
+        for (int i = 0; i < figures.size(); i++) {
+            boolean flag = true;
+            for (int j = 0; j < figures.size(); j++) {
+                if (!figures.get(j).getType().equals(FigureType.START)) {
+                    if (figures.get(i).getType().equals(FigureType.CONDITION)) {
+                        if (figures.get(i).getOutputRight().getId() == (figures.get(j).getId()) ||
+                                figures.get(i).getOutputLeft().getId() == (figures.get(j).getId())) {
+                            flag = false;
+                            break;
+                        }
+                    } else {
+                        if (!figures.get(i).getType().equals(FigureType.END)) {
+                            if (figures.get(i).getOutput().getId() == (figures.get(j).getId())) {
+                                flag = false;
+                                break;
+                            }
+                        } else {
+                            flag = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (flag) {
+                code = new ArrayList<>();
+                code.add(INCORRECT);
+                return code;
+            }
+        }
+        int count = 0;
+        for (Figure figure : figures) {
+            if (figure.getType().equals(FigureType.CYCLE_START)) {
+                count++;
+                break;
+            }
+            if (figure.getType().equals(FigureType.CYCLE_END)) {
+                count--;
+                break;
+            }
+        }
+        if (count != 0) {
+            code = new ArrayList<>();
+            code.add(INCORRECT);
+            return code;
+        }
         code.add("public static void main(String[] args) {");
         if (input(figures)) {
-            code.add("Scanner in = new Scanner(System.in);");
+            code.add("Scanner in;");
         }
         Figure start = figures.get(0);
         for (Figure figure : figures) {
@@ -43,82 +94,95 @@ public class CodeGeneratorService {
             }
         }
         start = start.getOutput();
-        while (!start.getType().equals(FigureType.END)) {
-            if (!start.getType().equals(FigureType.CONDITION)) {
-                code.add(getFigureCode(start));
-                start = start.getOutput();
-            } else {
-
-            }
-        }
-        if (input(figures)) {
-            code.add("in.close();");
-        }
+        code.addAll(getNextFigureCode(start, null));
         code.add("}");
         return code;
     }
 
-    private String getFigureCode(Figure figure) {
-        String res = "";
+    private ArrayList<String> getNextFigureCode(Figure figure, Figure end) {
+        for (Figure _figure : figures) {
+            if (_figure.getId() == figure.getId()) {
+                figure = _figure;
+                break;
+            }
+        }
+        ArrayList<String> res = new ArrayList<>();
+        if (figure.getType().equals(FigureType.END)) {
+            return res;
+        }
+        if (end != null && figure == end) {
+            return res;
+        }
+        if (figure.getType().equals(FigureType.CONDITION)) {
+            Figure right = figure.getOutputRight();
+            Figure left = figure.getOutputLeft();
+            end = getConditionEnd(right, left);
+            res.addAll(getConditionCode(figure, end));
+            res.addAll(getNextFigureCode(end, null));
+        } else {
+            res.addAll(getFigureCode(figure));
+            res.addAll(getNextFigureCode(figure.getOutput(), null));
+        }
+        return res;
+    }
+
+    private Figure getConditionEnd(Figure right, Figure left) {
+        Figure end = null;
+        while (!right.getType().equals(FigureType.END)) {
+            Figure _left = left;
+            while (!_left.getType().equals(FigureType.END)) {
+                if (right.equals(_left)) {
+                    end = right;
+                }
+                if (_left.getType().equals(FigureType.CONDITION)) {
+                    _left = _left.getOutputRight();
+                } else {
+                    _left = _left.getOutput();
+                }
+            }
+            if (right.getType().equals(FigureType.CONDITION)) {
+                right = right.getOutputRight();
+            } else {
+                right = right.getOutput();
+            }
+        }
+        if (end == null) {
+            end = right;
+        }
+        return end;
+    }
+
+    private ArrayList<String> getFigureCode(Figure figure) {
+        ArrayList<String> res = new ArrayList<>();
         switch (figure.getType()) {
             case FigureType.ACTIVITY:
-                res = figure.getText() + ";";
+                res.add(figure.getText() + ";");
                 break;
             case FigureType.INPUT:
-                res = figure.getText() + " = in.next();";
+                res.add("in = new Scanner(System.in);");
+                res.add(figure.getText() + " = in.next();");
+                res.add("in.close();");
                 break;
             case FigureType.OUTPUT:
-                res = "System.out.println(" + figure.getText() + ");";
+                res.add("System.out.println(" + figure.getText() + ");");
                 break;
             case FigureType.CYCLE_START:
-                res = "while(" + figure.getText() + "){";
+                res.add("while(" + figure.getText() + "){");
                 break;
             case FigureType.CYCLE_END:
-                res = "}";
+                res.add("}");
                 break;
         }
         return res;
     }
 
-    private ArrayList<String> getConditionCode(Figure figure) {
-        Figure left;
-        Figure right = figure.getOutputRight();
-        Figure end = figure.getOutputLeft();
-        while (!right.getType().equals(FigureType.END)) {
-            left = figure.getOutputLeft();
-            while (!left.getType().equals(FigureType.END)) {
-                if (right.equals(left)) {
-                    end = right;
-                }
-                left = left.getOutput();
-            }
-            right = right.getOutput();
-        }
-        left = figure.getOutputLeft();
-        right = figure.getOutputRight();
-        ArrayList<String> codeLeft = new ArrayList<>();
-        ArrayList<String> codeRight = new ArrayList<>();
-        while (!left.equals(end)) {
-            codeLeft.add(getFigureCode(left));
-            left.getOutput();
-        }
-        while (!right.equals(end)) {
-            codeRight.add(getFigureCode(right));
-            right.getOutput();
-        }
+    private ArrayList<String> getConditionCode(Figure figure, Figure end) {
         ArrayList<String> res = new ArrayList<>();
         res.add("if(" + figure.getText() + "){");
-        for (String str : codeRight) {
-            res.add(str);
-        }
+        res.addAll(getNextFigureCode(figure.getOutputLeft(), end));
+        res.add("}else{");
+        res.addAll(getNextFigureCode(figure.getOutputRight(), end));
         res.add("}");
-        if (codeLeft.size() > 0) {
-            res.add("else{");
-            for (String str : codeLeft) {
-                res.add(str);
-            }
-            res.add("}");
-        }
         return res;
     }
 

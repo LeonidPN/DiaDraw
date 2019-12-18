@@ -3,9 +3,9 @@
     package="com.example.diadraw">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
-        <activity android:name=".Views.MainActivity"></activity>
+        <activity android:name=".Views.CodeActivity"></activity>
+        <activity android:name=".Views.MainActivity" />
         <activity android:name=".Views.ChooseFileActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
