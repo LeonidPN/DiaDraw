@@ -1,16 +1,14 @@
 package com.example.diadraw.Views;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
 import com.example.diadraw.Presenters.MainPresenter;
@@ -92,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
         presenter.setDialog(new Dialog(this));
         presenter.getDialog().setContentView(R.layout.text_change_dialog);
-        presenter.getDialog().findViewById(R.id.buttonChange).setOnClickListener(new View.OnClickListener() {
+        presenter.getDialog().findViewById(R.id.buttonSave).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.changeText();
@@ -105,5 +103,13 @@ public class MainActivity extends AppCompatActivity {
                 presenter.cancel();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        String fileName = getIntent().getStringExtra("filename");
+        presenter.loadData(fileName);
+        presenter.resume();
+        super.onResume();
     }
 }

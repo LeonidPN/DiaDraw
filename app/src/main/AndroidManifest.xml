@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
-        <activity android:name=".Views.CodeActivity"></activity>
+        <activity android:name=".Views.SettingsActivity"></activity>
+        <activity android:name=".Views.CodeActivity" />
         <activity android:name=".Views.MainActivity" />
         <activity android:name=".Views.ChooseFileActivity">
             <intent-filter>

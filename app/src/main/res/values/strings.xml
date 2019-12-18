@@ -13,4 +13,10 @@
     <string name="settings">Настройки</string>
     <string name="generate_code">Сгенерировать код</string>
     <string name="help">Помощь</string>
+    <string name="auto_save">Промежуток автоматического сохранения</string>
+    <string name="work_area_color">Цвет рабочей области</string>
+    <string name="figures_color">Цвет блоков схемы</string>
+    <string name="font_color">Цвет текста</string>
+    <string name="border_color">Цвет границ</string>
+    <string name="save">Сохранить</string>
 </resources>

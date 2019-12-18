@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -27,11 +28,17 @@ import com.example.diadraw.Models.WorkModels.Point;
 import com.example.diadraw.R;
 import com.example.diadraw.Views.CodeActivity;
 import com.example.diadraw.Views.DrawView;
+import com.example.diadraw.Views.MainActivity;
+import com.example.diadraw.Views.SettingsActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class MainPresenter {
 
@@ -91,6 +98,9 @@ public class MainPresenter {
     private FloatingActionButton buttonSave;
     private FloatingActionButton buttonHome;
 
+    private int autoSaveTime;
+    private Timer timer = new Timer();
+
     private Dialog dialog;
 
     public void setRootView(View rootView) {
@@ -113,6 +123,7 @@ public class MainPresenter {
         translateY = this.drawView.getBitmapHight() / 2;
         this.drawView.setTranslateX(translateX);
         this.drawView.setTranslateY(translateY);
+        this.drawView.invalidate();
     }
 
     public void setImageViewStart(ImageView imageViewStart) {
@@ -377,6 +388,8 @@ public class MainPresenter {
                         dialog.show();
                         return true;
                     } else if (item.getItemId() == R.id.item_settings) {
+                        Intent intent = new Intent(context, SettingsActivity.class);
+                        context.startActivity(intent);
                         return true;
                     } else if (item.getItemId() == R.id.item_generate_code) {
                         saveFile();
@@ -885,5 +898,33 @@ public class MainPresenter {
             return false;
         }
     };
+
+    public void resume() {
+        SharedPreferences settings = context.getSharedPreferences("Settings", MODE_PRIVATE);
+        int time;
+        if (settings.contains("autoSaveTime")) {
+            time = settings.getInt("autoSaveTime", 0);
+        } else {
+            time = 0;
+        }
+        if (time != autoSaveTime) {
+            autoSaveTime = time;
+            if (autoSaveTime > 0) {
+                timer.schedule(new UpdateTimeTask(), autoSaveTime * 1000 * 60, autoSaveTime * 1000 * 60);
+            } else {
+                timer.cancel();
+            }
+        } else {
+            if (autoSaveTime > 0) {
+                timer.schedule(new UpdateTimeTask(), autoSaveTime * 1000 * 60, autoSaveTime * 1000 * 60);
+            }
+        }
+    }
+
+    private class UpdateTimeTask extends TimerTask {
+        public void run() {
+            saveFile();
+        }
+    }
 
 }

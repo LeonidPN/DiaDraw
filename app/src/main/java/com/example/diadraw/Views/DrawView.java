@@ -1,6 +1,7 @@
 package com.example.diadraw.Views;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -17,6 +18,8 @@ import com.example.diadraw.R;
 
 import java.util.ArrayList;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class DrawView extends View {
 
     private Paint fontPaint;
@@ -30,6 +33,8 @@ public class DrawView extends View {
     private Paint borderPaint;
 
     private int borderColor;
+
+    private int workAreaColor;
 
     private ArrayList<Figure> figures;
 
@@ -51,12 +56,14 @@ public class DrawView extends View {
 
     private int bitmapHight;
 
+    private SharedPreferences settings;
+
     public DrawView(Context context) {
         super(context);
 
-        fontColor = Color.BLACK;
-        figureColor = Color.GRAY;
-        borderColor = Color.BLACK;
+        settings = context.getSharedPreferences("Settings", MODE_PRIVATE);
+
+        updateColors();
 
         figures = new ArrayList<>();
 
@@ -82,6 +89,29 @@ public class DrawView extends View {
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setColor(borderColor);
         borderPaint.setStrokeWidth(5);
+    }
+
+    private void updateColors(){
+        if (settings.contains("workAreaColor")) {
+            workAreaColor = settings.getInt("workAreaColor", Color.WHITE);
+        } else {
+            workAreaColor = Color.WHITE;
+        }
+        if (settings.contains("figuresColor")) {
+            figureColor = settings.getInt("figuresColor", Color.GRAY);
+        } else {
+            figureColor = Color.GRAY;
+        }
+        if (settings.contains("fontColor")) {
+            fontColor = settings.getInt("fontColor", Color.BLACK);
+        } else {
+            fontColor = Color.BLACK;
+        }
+        if (settings.contains("borderColor")) {
+            borderColor = settings.getInt("borderColor", Color.BLACK);
+        } else {
+            borderColor = Color.BLACK;
+        }
     }
 
     public void setFigures(ArrayList<Figure> figures) {
@@ -121,10 +151,11 @@ public class DrawView extends View {
     }
 
     public Bitmap getBitmap() {
+        updateColors();
         bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHight,
                 Bitmap.Config.ARGB_8888);
         Canvas canvasSaving = new Canvas(bitmap);
-        canvasSaving.drawColor(Color.WHITE);
+        canvasSaving.drawColor(workAreaColor);
         canvasSaving.scale(0.5f, 0.5f);
         canvasSaving.translate(translateX, translateY);
         for (Line line : lines) {
@@ -195,9 +226,10 @@ public class DrawView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        updateColors();
         bitmapWidth = canvas.getMaximumBitmapWidth();
         bitmapHight = canvas.getMaximumBitmapHeight();
-        canvas.drawColor(Color.WHITE);
+        canvas.drawColor(workAreaColor);
         canvas.scale(0.5f, 0.5f);
         canvas.translate(translateX, translateY);
         for (Line line : lines) {
