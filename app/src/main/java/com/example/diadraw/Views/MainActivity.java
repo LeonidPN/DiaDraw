@@ -1,12 +1,17 @@
 package com.example.diadraw.Views;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ScrollView;
@@ -14,6 +19,9 @@ import android.widget.ScrollView;
 import com.example.diadraw.Presenters.MainPresenter;
 import com.example.diadraw.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -103,6 +111,49 @@ public class MainActivity extends AppCompatActivity {
                 presenter.cancel();
             }
         });
+
+        AlertDialog.Builder helpDialogBuilder;
+        helpDialogBuilder = new AlertDialog.Builder(this);
+        helpDialogBuilder.setNegativeButton("Закрыть",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.help_dialog, null);
+        helpDialogBuilder.setView(dialogView);
+        //helpDialog.setView(linearlayout);
+        //View linearlayout = getLayoutInflater().inflate(R.layout.help_dialog, null);
+        RecyclerView recyclerView = dialogView.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        Map<Integer, String> map = new HashMap<>();
+        map.put(R.drawable.image_1, "На экране представлено 4 кнопки: возврат на страницу выбора файла (без сохранения схемы), " +
+                "быстрое сохранение, кнопка открытия панели блоков  и кнопка открытия меню");
+        //map.put(R.drawable.image_2, "В меню");
+        map.put(R.drawable.image_3, "При нажатии на кнопку открытия панели блоков открывается панель со всеми доступными для" +
+                " использования блоки");
+        map.put(R.drawable.image_4, "При нажатии на любой элемент из панели блоков соответствующий блок появляется по центру экрана");
+        map.put(R.drawable.image_5, "При нажатии на блок в рабочей области он выделяется. Рядом с ним появляются кнопки перетаскивания " +
+                "и удаления блока");
+        map.put(R.drawable.image_6, "При нажатии на кнопку перетаскивания блока он будет двигаться за пальцем");
+        map.put(R.drawable.image_7, "При нажатии на кнопку удаления блока он удаляется");
+        map.put(R.drawable.image_8, "Если на выделенную фигуру долго нажимать она перейдет в состояние соединения блоков");
+        map.put(R.drawable.image_9, "При нажатии на другую фигуру автоматически появляется соединительная линия между блоками");
+        map.put(R.drawable.image_10, "Если на выделенныю фигуру нажать второй раз, откроется окно изменения текста блока");
+        map.put(R.drawable.image_11, "Введенный текст быдет отображаться на соответствующем блоке");
+        map.put(R.drawable.image_12, "При нажатии на соеденительную линию она выделяется");
+        map.put(R.drawable.image_13, "Если на выделенную линию долго нажимать создасться дополнительная точка на линии");
+        map.put(R.drawable.image_14, "Эту точку можно перемещать по рабочей области");
+        map.put(R.drawable.image_15, "При нажатии на кнопку удаления линии она удаляется");
+        map.put(R.drawable.image_16, "При движении пальцем по свободной части рабочей области ее можно сдвинуть");
+        map.put(R.drawable.image_17, "Это позволяетсоздать дополнительное место на рабочей области");
+        map.put(R.drawable.image_18, "При этом новые созданные блоки появляются по прежнему в центре экрана");
+        //map.put(R.drawable.image_19, "");
+        //map.put(R.drawable.image_20, "");
+        recyclerView.setAdapter(new HelpListAdapter(map));
+        AlertDialog helpDialog = helpDialogBuilder.create();
+        presenter.setHelpDialog(helpDialog);
     }
 
     @Override

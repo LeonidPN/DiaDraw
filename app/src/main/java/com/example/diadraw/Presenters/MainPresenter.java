@@ -16,6 +16,7 @@ import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -102,6 +103,7 @@ public class MainPresenter {
     private Timer timer = new Timer();
 
     private Dialog dialog;
+    private AlertDialog helpDialog;
 
     public void setRootView(View rootView) {
         this.rootView = rootView;
@@ -196,6 +198,10 @@ public class MainPresenter {
 
     public void setDialog(Dialog dialog) {
         this.dialog = dialog;
+    }
+
+    public void setHelpDialog(AlertDialog helpDialog) {
+        this.helpDialog = helpDialog;
     }
 
     private MainPresenter(Context context) {
@@ -398,6 +404,7 @@ public class MainPresenter {
                         context.startActivity(intent);
                         return true;
                     } else if (item.getItemId() == R.id.item_help) {
+                        helpDialog.show();
                         return true;
                     } else {
                         return false;
@@ -538,7 +545,7 @@ public class MainPresenter {
                             float x1 = selectedLine.getPoints().get(j).getX() - translateX / 2;
                             float y1 = selectedLine.getPoints().get(j).getY() - translateY / 2;
                             if (j > 0 && j < selectedLine.getPoints().size() - 1) {
-                                if (Math.sqrt((evX - x1) * (evX - x1) + (evY - y1) * (evY - y1)) <= 30) {
+                                if (Math.sqrt((evX - x1) * (evX - x1) + (evY - y1) * (evY - y1)) <= 50) {
                                     dragLineFlag = true;
                                     dragX = x - selectedLine.getPoints().get(j).getX();
                                     dragY = y - selectedLine.getPoints().get(j).getY();
@@ -601,7 +608,7 @@ public class MainPresenter {
                                 for (int j = 1; j < selectedLine.getPoints().size() - 1; j++) {
                                     float x1 = selectedLine.getPoints().get(j).getX() - translateX / 2;
                                     float y1 = selectedLine.getPoints().get(j).getY() - translateY / 2;
-                                    if (Math.sqrt((evX - x1) * (evX - x1) + (evY - y1) * (evY - y1)) <= 30) {
+                                    if (Math.sqrt((evX - x1) * (evX - x1) + (evY - y1) * (evY - y1)) <= 50) {
                                         model.getLines().get(i).getPoints().get(j).setX(evX - dragX);
                                         model.getLines().get(i).getPoints().get(j).setY(evY - dragY);
                                         drawView.setLines(model.getLines());
@@ -747,7 +754,7 @@ public class MainPresenter {
                         float k = (y1 - y2) / (x1 - x2);
                         float b = y2 - k * x2;
 
-                        if ((k * x - y + b) / Math.sqrt(k * k + 1) <= 30 &&
+                        if ((k * x - y + b) / Math.sqrt(k * k + 1) <= 50 &&
                                 (k * x - y + b) / Math.sqrt(k * k + 1) >= 0) {
                             if (x >= x1 && x <= x2 || x <= x1 && x >= x2) {
                                 if (y >= y1 && y <= y2 || y <= y1 && y >= y2) {
@@ -876,7 +883,7 @@ public class MainPresenter {
                     float k = (y1 - y2) / (x1 - x2);
                     float b = y2 - k * x2;
 
-                    if ((k * x - y + b) / Math.sqrt(k * k + 1) <= 30 &&
+                    if ((k * x - y + b) / Math.sqrt(k * k + 1) <= 50 &&
                             (k * x - y + b) / Math.sqrt(k * k + 1) >= 0) {
                         p = j;
                         float r1 = Math.abs(x - (y - b) / k);
