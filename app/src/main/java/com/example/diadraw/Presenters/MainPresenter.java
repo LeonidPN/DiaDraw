@@ -315,11 +315,9 @@ public class MainPresenter {
                     for (Figure figure : model.getFigures()) {
                         if (figure.getType().equals(FigureType.CYCLE_START)) {
                             count++;
-                            break;
                         }
                         if (figure.getType().equals(FigureType.CYCLE_END)) {
                             count--;
-                            break;
                         }
                     }
                     if (count > 0) {
@@ -370,28 +368,31 @@ public class MainPresenter {
                     if (item.getItemId() == R.id.item_export) {
                         final Dialog dialog = new Dialog(context);
                         dialog.setContentView(R.layout.file_creation_dialog);
+                        final String fileName = ((EditText) dialog.findViewById(R.id.editTextFileName)).getText().toString();
                         ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
-                        dialog.findViewById(R.id.buttonCreate).setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                try {
-                                    fileService.saveImage(context,
-                                            ((EditText) dialog.findViewById(R.id.editTextFileName)).getText().toString(),
-                                            drawView.getBitmap());
-                                    dialog.dismiss();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                        if (checkFileName(fileName)) {
+                            dialog.findViewById(R.id.buttonCreate).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    try {
+                                        fileService.saveImage(context,
+                                                fileName,
+                                                drawView.getBitmap());
+                                        dialog.dismiss();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        });
-                        dialog.findViewById(R.id.buttonCancel).setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
-                                dialog.dismiss();
-                            }
-                        });
-                        dialog.show();
+                            });
+                            dialog.findViewById(R.id.buttonCancel).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
+                                    dialog.dismiss();
+                                }
+                            });
+                            dialog.show();
+                        }
                         return true;
                     } else if (item.getItemId() == R.id.item_settings) {
                         Intent intent = new Intent(context, SettingsActivity.class);
@@ -932,6 +933,16 @@ public class MainPresenter {
         public void run() {
             saveFile();
         }
+    }
+
+    private boolean checkFileName(String fileName) {
+        if (fileName.length() < 1 || fileName.length() > 20) {
+            return false;
+        }
+        if (!fileName.matches("\\w{1}[\\w!@\\$%&\\*\\+\\-_]*")) {
+            return false;
+        }
+        return true;
     }
 
 }

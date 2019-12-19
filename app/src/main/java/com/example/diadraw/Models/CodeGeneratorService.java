@@ -70,11 +70,9 @@ public class CodeGeneratorService {
         for (Figure figure : figures) {
             if (figure.getType().equals(FigureType.CYCLE_START)) {
                 count++;
-                break;
             }
             if (figure.getType().equals(FigureType.CYCLE_END)) {
                 count--;
-                break;
             }
         }
         if (count != 0) {

@@ -14,6 +14,8 @@ import com.example.diadraw.Views.ChooseFileListAdapter;
 import com.example.diadraw.Views.MainActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChooseFileListPresenter {
     private FileService fileService = new FileService();
@@ -46,11 +48,13 @@ public class ChooseFileListPresenter {
                             @Override
                             public void onClick(View v) {
                                 try {
-                                    fileService.renameFile(v.getContext(), fileModel.getName(),
-                                            ((EditText) dialog.findViewById(R.id.editTextFileName))
-                                                    .getText().toString());
-                                    dialog.dismiss();
-                                    presenter.updateRecyclerView();
+                                    if (checkFileName(((EditText) dialog.findViewById(R.id.editTextFileName)).getText().toString())) {
+                                        fileService.renameFile(v.getContext(), fileModel.getName(),
+                                                ((EditText) dialog.findViewById(R.id.editTextFileName))
+                                                        .getText().toString());
+                                        dialog.dismiss();
+                                        presenter.updateRecyclerView();
+                                    }
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -82,16 +86,43 @@ public class ChooseFileListPresenter {
         popupMenu.show();
     }
 
-    public void openFile(){
+    public void openFile() {
         View v = holder.itemView.getRootView();
         try {
             final FileModel fileModel = fileService.getFilesList(v.getContext()).get(position);
-            Intent intent =new Intent(v.getContext(), MainActivity.class);
+            Intent intent = new Intent(v.getContext(), MainActivity.class);
             intent.putExtra("filename", fileModel.getName());
             presenter.getContext().startActivity(intent);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private List<FileModel> getFiles() {
+        try {
+            View v = holder.itemView.getRootView();
+            return fileService.getFilesList(v.getContext());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    private boolean checkFileName(String fileName) {
+        List<FileModel> list;
+        list = getFiles();
+        for (FileModel fileModel : list) {
+            if (fileModel.getName().equals(fileName)) {
+                return false;
+            }
+        }
+        if (fileName.length() < 1 || fileName.length() > 20) {
+            return false;
+        }
+        if (!fileName.matches("\\w{1}[\\w!@\\$%&\\*\\+\\-_]*")) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -63,8 +63,6 @@ public class DrawView extends View {
 
         settings = context.getSharedPreferences("Settings", MODE_PRIVATE);
 
-        updateColors();
-
         figures = new ArrayList<>();
 
         lines = new ArrayList<>();
@@ -75,23 +73,26 @@ public class DrawView extends View {
         translateY = 0;
 
         fontPaint = new Paint();
+        figurePaint = new Paint();
+        borderPaint = new Paint();
+
+        updateColors();
+
         fontPaint.setTextSize(40);
         fontPaint.setStyle(Paint.Style.FILL);
         fontPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
         fontPaint.setColor(fontColor);
         fontPaint.setTextAlign(Paint.Align.CENTER);
 
-        figurePaint = new Paint();
         figurePaint.setStyle(Paint.Style.FILL);
         figurePaint.setColor(figureColor);
 
-        borderPaint = new Paint();
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setColor(borderColor);
         borderPaint.setStrokeWidth(5);
     }
 
-    private void updateColors(){
+    private void updateColors() {
         if (settings.contains("workAreaColor")) {
             workAreaColor = settings.getInt("workAreaColor", Color.WHITE);
         } else {
@@ -102,16 +103,19 @@ public class DrawView extends View {
         } else {
             figureColor = Color.GRAY;
         }
+        figurePaint.setColor(figureColor);
         if (settings.contains("fontColor")) {
             fontColor = settings.getInt("fontColor", Color.BLACK);
         } else {
             fontColor = Color.BLACK;
         }
+        fontPaint.setColor(fontColor);
         if (settings.contains("borderColor")) {
             borderColor = settings.getInt("borderColor", Color.BLACK);
         } else {
             borderColor = Color.BLACK;
         }
+        borderPaint.setColor(borderColor);
     }
 
     public void setFigures(ArrayList<Figure> figures) {

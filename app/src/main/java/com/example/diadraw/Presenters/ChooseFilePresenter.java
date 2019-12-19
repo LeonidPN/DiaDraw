@@ -66,8 +66,6 @@ public class ChooseFilePresenter {
         return context;
     }
 
-    private List<FileModel> list = new ArrayList<>();
-
     public List<FileModel> getFileList() {
         return getFiles();
     }
@@ -75,12 +73,14 @@ public class ChooseFilePresenter {
     public void createFile() {
         String fileName = ((EditText) dialog.findViewById(R.id.editTextFileName)).getText().toString();
         ((EditText) dialog.findViewById(R.id.editTextFileName)).setText("");
-        try {
-            fileService.createFile(context, fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (checkFileName(fileName)) {
+            try {
+                fileService.createFile(context, fileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            dialog.dismiss();
         }
-        dialog.dismiss();
     }
 
     public void updateRecyclerView() {
@@ -103,5 +103,22 @@ public class ChooseFilePresenter {
             e.printStackTrace();
             return new ArrayList<>();
         }
+    }
+
+    private boolean checkFileName(String fileName) {
+        List<FileModel> list;
+        list = getFiles();
+        for (FileModel fileModel : list) {
+            if (fileModel.getName().equals(fileName)) {
+                return false;
+            }
+        }
+        if (fileName.length() < 1 || fileName.length() > 20) {
+            return false;
+        }
+        if (!fileName.matches("\\w{1}[\\w!@\\$%&\\*\\+\\-_]*")) {
+            return false;
+        }
+        return true;
     }
 }

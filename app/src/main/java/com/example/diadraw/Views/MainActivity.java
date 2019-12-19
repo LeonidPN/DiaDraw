@@ -158,8 +158,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        String fileName = getIntent().getStringExtra("filename");
-        presenter.loadData(fileName);
         presenter.resume();
         super.onResume();
     }
