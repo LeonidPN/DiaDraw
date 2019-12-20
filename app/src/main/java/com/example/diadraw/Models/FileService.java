@@ -129,4 +129,19 @@ public class FileService {
         fos.close();
     }
 
+    public boolean checkFileName(String fileName, List<FileModel> list) {
+        for (FileModel fileModel : list) {
+            if (fileModel.getName().equals(fileName)) {
+                return false;
+            }
+        }
+        if (fileName.length() < 1 || fileName.length() > 20) {
+            return false;
+        }
+        if (!fileName.matches("\\w{1}[\\w!@\\$%&\\*\\+\\-_]*")) {
+            return false;
+        }
+        return true;
+    }
+
 }

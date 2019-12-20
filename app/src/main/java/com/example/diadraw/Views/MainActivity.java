@@ -115,11 +115,11 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder helpDialogBuilder;
         helpDialogBuilder = new AlertDialog.Builder(this);
         helpDialogBuilder.setNegativeButton("Закрыть",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.help_dialog, null);
         helpDialogBuilder.setView(dialogView);
